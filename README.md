@@ -79,6 +79,8 @@ gcc -O2 -pthread -o ex1 ex1.c
 gcc -O2 -pthread -o ex2 ex2.c
 ```
 
+![ex2](./images_compiler/ex2.png)
+
 # Questão 3
 
 ## Descrição
@@ -101,6 +103,8 @@ Também suportamos **duas políticas de trava**:
 ```
    bash gcc -O2 -Wall -Wextra -pthread -o ex3 ex3.c
 ```
+
+![ex3](./images_compiler/ex3.png)
 
 # Questão 4
 
@@ -133,6 +137,8 @@ Também suportamos **duas políticas de trava**:
 ```bash
 gcc -O2 -pthread -o ex4 ex4.c
 ```
+
+![ex4](./images_compiler/ex4.png)
 
 # Questão 5
 
@@ -183,6 +189,8 @@ Ler um arquivo grande de inteiros e calcular:
 gcc -O2 -Wall -Wextra -pthread -o ex6 ex6.c
 ```
 
+![ex6](./images_compiler/ex6.png)
+
 # Questão 7
 
 ## Descrição
@@ -227,6 +235,8 @@ gcc -O2 -Wall -Wextra -pthread -o ex6 ex6.c
 gcc -O2 -pthread -o ex7 ex7.c
 ```
 
+![ex7](./images_compiler/ex7.png)
+
 # Questão 8 — Estendido (Bursts, Backpressure e Estabilidade)
 
 ## Descrição
@@ -258,6 +268,8 @@ gcc -O2 -pthread -o ex8 ex8.c
 ./ex2_ext -p 3 -c 2 -n 32  -d 12 -b 40 -i 250 -w 24:16  -s 50
 ./ex2_ext -p 3 -c 2 -n 256 -d 12 -b 40 -i 250 -w 192:128 -s 50
 ```
+
+![ex8](./images_compiler/ex8.png)
 
 # Questão 9
 
@@ -303,6 +315,8 @@ Compilação (Linux e ambientes com `pthread_barrier_t`):
 gcc -O2 -pthread -o ex9 ex9.c
 
 ```
+
+![ex9](./images_compiler/ex9.png)
 
 # Questão 10
 
@@ -350,3 +364,5 @@ gcc -O2 -pthread -o ex10 ex10.c
 # ou com parâmetros:
 ./ex10 -r 5 -w 6 -t 3 -d 12
 ```
+
+![ex10](./images_compiler/ex10.png)
