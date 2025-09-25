@@ -178,7 +178,7 @@ Ler um arquivo grande de inteiros e calcular:
 ## Como compilar
 
 ```bash
-gcc -O2 -Wall -Wextra -pthread -o par_sumhist par_sumhist.c
+gcc -O2 -Wall -Wextra -pthread -o ex6 ex6.c
 ```
 
 # Questão 7
