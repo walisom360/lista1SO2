@@ -224,3 +224,127 @@ gcc -O2 -Wall -Wextra -pthread -o ex6 ex6.c
 ```bash
 gcc -O2 -pthread -o ex7 ex7.c
 ```
+
+# Questão 8 — Estendido (Bursts, Backpressure e Estabilidade)
+
+## Descrição
+
+Extensão do **buffer circular P/C** para simular **rajadas de produção (bursts)** seguidas de **ociosidade**, com **backpressure** por **marca d’água**: produtores **aguardam** quando a ocupação do buffer ultrapassa o **HWM** (High Watermark) e só retomam quando cai abaixo do **LWM** (Low Watermark). A ocupação do buffer é **amostrada periodicamente** para análise de **estabilidade**.
+
+- **Sincronização:** `pthread_mutex` + `sem_t` (`empty`/`full`) sem busy-wait.
+- **Backpressure com histerese:** `pthread_cond_t` + `HWM/LWM`.
+- **Métricas:** throughput (prod/cons), **tempo médio de espera** (produtor ao enfileirar, consumidor ao retirar) e **latência no buffer**.
+- **Série temporal:** `t_ms,occ` (CSV leve) para plotar e avaliar oscilações/saturação.
+
+## Parâmetros
+
+- `-p P` produtores (default `3`)
+- `-c C` consumidores (default `2`)
+- `-n N` tamanho do buffer (default `64`)
+- `-d S` duração (s) (default `12`)
+- `-b B` tamanho da **rajada** (default `40` itens)
+- `-i MS` **ociosidade** após cada rajada (ms, default `250`)
+- `-w H:L` **HWM:LWM** em itens (default `48:32`)
+- `-s MS` período de **amostragem** da ocupação (ms, default `100`)
+
+## Como compilar e executar
+
+```bash
+gcc -O2 -pthread -o ex8 ex8.c
+./ex2_ext
+# exemplos:
+./ex2_ext -p 3 -c 2 -n 32  -d 12 -b 40 -i 250 -w 24:16  -s 50
+./ex2_ext -p 3 -c 2 -n 256 -d 12 -b 40 -i 250 -w 192:128 -s 50
+```
+
+# Questão 9
+
+## Descrição
+
+**Corrida de revezamento** com **equipes de K threads**, onde **todas** precisam alcançar uma **barreira** para liberar a próxima “perna” da prova.  
+Cada liberação da barreira conta **1 rodada**. O programa mede **rodadas por minuto (RPM)** para diferentes **tamanhos de equipe** em uma mesma execução.
+
+- **Barreira:** `pthread_barrier_t` (padrão) ou implementação própria com **mutex + condvar** (compatibilidade).
+- **Latência por perna:** atraso aleatório por thread (simula trabalho) antes da barreira.
+- **Medição:** tempo com `CLOCK_MONOTONIC`; contagem de rodadas pela _thread serial_ da barreira (1 incremento por liberação).
+- **Encerramento limpo:** _flag_ global desarma o laço; todas as threads fazem um **último `barrier_wait`** para evitar deadlock.
+
+---
+
+## Parâmetros
+
+- `-t S` → duração do experimento **por K** (segundos).
+- `-k K1[,K2,...]` → lista de tamanhos de equipe a testar.
+- `-w MIN:MAX` → latência aleatória por perna, em **ms** (padrão `0:0`).
+- (Opcional) **`-DUSE_CUSTOM_BARRIER`** na compilação para usar barreira manual (mutex/condvar) em sistemas sem `pthread_barrier_t`.
+
+---
+
+## Decisões
+
+- **Sincronização**
+  - Barreira: `pthread_barrier_t` (ou _custom_ com `pthread_mutex_t` + `pthread_cond_t`).
+  - Contagem de rodadas: **apenas** a _thread serial_ incrementa → evita disputa/overcount.
+- **Medição e robustez**
+  - Relógio `CLOCK_MONOTONIC` (imune a saltos de sistema).
+  - **Shutdown sem deadlock:** após desarmar `running`, todas passam uma **última** vez na barreira.
+- **Exploração de desempenho**
+  - Varia-se **K** e a **latência** `-w MIN:MAX` para observar a queda de RPM por contenção/sincronização.
+
+---
+
+## Como compilar e executar
+
+Compilação (Linux e ambientes com `pthread_barrier_t`):
+
+```bash
+gcc -O2 -pthread -o ex9 ex9.c
+
+```
+
+# Questão 10
+
+## Descrição
+
+Cenário com **múltiplos recursos** (mutexes) e **múltiplas threads** que, **propositalmente**, podem entrar em **deadlock** por adquirirem **locks em ordens distintas**.  
+Uma thread **watchdog** monitora o sistema e, se não houver **progresso por _T_ segundos**, emite um **relatório** dos recursos/threads suspeitos (o que cada thread **segura** e **o que está tentando adquirir**).  
+Em seguida, executamos uma **versão corrigida** que impõe **ordem total de travamento** (sempre `lock(a)`, depois `lock(b)` com `a < b`), e comparamos os comportamentos.
+
+---
+
+## Decisões
+
+- **Recursos**: `R` mutexes (`pthread_mutex_t`) indexados `0..R-1`.
+- **Workers**: `W` threads; cada uma tenta adquirir **dois recursos** por iteração.
+  - **Fase A (insegura)**: ordem de aquisição **varia** entre as threads → pode haver **espera circular** ⇒ **deadlock**.
+  - **Fase B (segura)**: ordem **total** (sempre menor índice → maior índice) ⇒ **sem deadlock**.
+- **Watchdog**:
+  - Observa `ops` globais e `last_progress` por thread.
+  - Se `ops` não muda por **T segundos**, imprime **snapshot**:
+    - `hold=(a,b)`: locks que a thread segura;
+    - `wait=x`: lock que a thread está tentando adquirir;
+    - `last_prog`: tempo desde o último progresso;
+    - `ops`: iterações concluídas pela thread.
+  - Encerra a fase insegura ao detectar **ausência de progresso**.
+
+---
+
+## Parâmetros
+
+- `-r R` → número de **recursos** (padrão: 5)
+- `-w W` → número de **workers** (padrão: 5)
+- `-t T` → **timeout** da watchdog em segundos (padrão: 3s)
+- `-d S` → **duração** por fase em segundos (padrão: 12s)
+
+Sem argumentos, o programa roda **Fase A** (insegura) seguida da **Fase B** (segura) com os **padrões**, ideal para compiladores online.
+
+---
+
+## Como compilar e executar
+
+```bash
+gcc -O2 -pthread -o ex10 ex10.c
+./ex10
+# ou com parâmetros:
+./ex10 -r 5 -w 6 -t 3 -d 12
+```
