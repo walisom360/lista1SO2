@@ -96,8 +96,9 @@ Também suportamos **duas políticas de trava**:
 
 ## Como compilar
 
-````bash
-gcc -O2 -Wall -Wextra -pthread -o ex3 ex3.c
+```
+   bash gcc -O2 -Wall -Wextra -pthread -o ex3 ex3.c
+```
 
 # Questão 4
 
@@ -129,7 +130,7 @@ gcc -O2 -Wall -Wextra -pthread -o ex3 ex3.c
 
 ```bash
 gcc -O2 -pthread -o ex4 ex4.c
-````
+```
 
 # Questão 5
 
@@ -176,8 +177,9 @@ Ler um arquivo grande de inteiros e calcular:
 
 ## Como compilar
 
-````bash
+```bash
 gcc -O2 -Wall -Wextra -pthread -o par_sumhist par_sumhist.c
+```
 
 # Questão 7
 
@@ -221,4 +223,4 @@ gcc -O2 -Wall -Wextra -pthread -o par_sumhist par_sumhist.c
 
 ```bash
 gcc -O2 -pthread -o ex7 ex7.c
-````
+```
