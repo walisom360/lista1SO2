@@ -36,6 +36,8 @@ Compilação:
 gcc -O2 -pthread -o ex1 ex1.c
 ```
 
+![ex1](./images_compiler/ex1.png)
+
 # Questão 2
 
 ## Descrição
