@@ -167,6 +167,8 @@ Provamos que a fila é **thread-safe** e que **nenhuma tarefa se perde** usando 
 gcc -O2 -pthread -o ex5 ex5.c
 ```
 
+![ex5](./images_compiler/ex5.png)
+
 # Questão 6
 
 ## Descrição
